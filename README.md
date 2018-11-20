@@ -7,7 +7,7 @@ Thanks for [GeorgeSeif](https://github.com/GeorgeSeif) for his great job!
 
   
 ## Pretrained model  
-Download [epoch_295.pth](https://drive.google.com/open?id=1A7NKd9zyIzratOHUqbnCMIZF8HXb-wHy) and put it in `./checkpoints`
+Download `epoch_295.pth` in [GoogleDrive](https://drive.google.com/open?id=1A7NKd9zyIzratOHUqbnCMIZF8HXb-wHy) and put it in `./checkpoints`
 
 
 ## Demo  
