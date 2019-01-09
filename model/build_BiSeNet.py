@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 from model.build_contextpath import build_contextpath
+import warnings
+warnings.filterwarnings(action='ignore')
+
 class ConvBlock(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=2,padding=1):
         super().__init__()
@@ -32,10 +35,11 @@ class AttentionRefinementModule(torch.nn.Module):
         self.bn = nn.BatchNorm2d(out_channels)
         self.sigmoid = nn.Sigmoid()
         self.in_channels = in_channels
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+
     def forward(self, input):
         # global average pooling
-        x = torch.mean(input, 3, keepdim=True)
-        x = torch.mean(x, 2, keepdim=True)
+        x = self.avgpool(input)
         assert self.in_channels == x.size(1), 'in_channels and out_channels should all be {}'.format(x.size(1))
         x = self.conv(x)
         # x = self.sigmoid(self.bn(x))
@@ -55,15 +59,17 @@ class FeatureFusionModule(torch.nn.Module):
         self.relu = nn.ReLU()
         self.conv2 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
         self.sigmoid = nn.Sigmoid()
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+
 
     def forward(self, input_1, input_2):
         x = torch.cat((input_1, input_2), dim=1)
         assert self.in_channels == x.size(1), 'in_channels of ConvBlock should be {}'.format(x.size(1))
         feature = self.convblock(x)
-        x = torch.mean(feature, 3, keepdim=True)
-        x = torch.mean(x, 2 ,keepdim=True)
+        x = self.avgpool(feature)
+
         x = self.relu(self.conv1(x))
-        x = self.sigmoid(self.relu(x))
+        x = self.sigmoid(self.conv2(x))
         x = torch.mul(feature, x)
         x = torch.add(x, feature)
         return x
@@ -87,6 +93,10 @@ class BiSeNet(torch.nn.Module):
         # build final convolution
         self.conv = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=1)
 
+        # supervision block
+        self.supervision1 = nn.Conv2d(in_channels=1024, out_channels=num_classes, kernel_size=1)
+        self.supervision2 = nn.Conv2d(in_channels=2048, out_channels=num_classes, kernel_size=1)
+
     def forward(self, input):
         # output of spatial path
         sx = self.saptial_path(input)
@@ -101,12 +111,22 @@ class BiSeNet(torch.nn.Module):
         cx2 = torch.nn.functional.interpolate(cx2, scale_factor=4, mode='bilinear')
         cx = torch.cat((cx1, cx2), dim=1)
 
+        if self.training == True:
+            cx1_sup = self.supervision1(cx1)
+            cx2_sup = self.supervision2(cx2)
+            cx1_sup = torch.nn.functional.interpolate(cx1_sup, scale_factor=8, mode='bilinear')
+            cx2_sup = torch.nn.functional.interpolate(cx2_sup, scale_factor=8, mode='bilinear')
+
         # output of feature fusion module
         result = self.feature_fusion_module(sx, cx)
 
         # upsampling
         result = torch.nn.functional.interpolate(result, scale_factor=8, mode='bilinear')
         result = self.conv(result)
+
+        if self.training == True:
+            return result, cx1_sup, cx2_sup
+
         return result
 
 

@@ -53,8 +53,11 @@ def train(args, model, optimizer, dataloader_train, dataloader_val, csv_path):
             if torch.cuda.is_available() and args.use_gpu:
                 data = data.cuda()
                 label = label.cuda()
-            output = model(data)
-            loss = torch.nn.BCEWithLogitsLoss()(output, label)
+            output, output_sup1, output_sup2 = model(data)
+            loss1 = torch.nn.BCEWithLogitsLoss()(output, label)
+            loss2 = torch.nn.BCEWithLogitsLoss()(output_sup1, label)
+            loss3 = torch.nn.BCEWithLogitsLoss()(output_sup2, label)
+            loss = loss1 + loss2 + loss3
             tq.update(args.batch_size)
             tq.set_postfix(loss='%.6f' % loss)
             optimizer.zero_grad()
