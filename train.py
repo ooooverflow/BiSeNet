@@ -163,7 +163,7 @@ if __name__ == '__main__':
         '--num_workers', '8',
         '--num_classes', '32',
         '--cuda', '0,1',
-        '--batch_size', '6',# 6 fpr resnet101, 12 for resnet18
+        '--batch_size', '6',# 6 for resnet101, 12 for resnet18
         '--save_model_path', './checkpoints_101_adam',
         '--context_path', 'resnet101', # only support resnet18 and resnet101
         '--optimizer', 'adam'
