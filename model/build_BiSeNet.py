@@ -50,10 +50,13 @@ class AttentionRefinementModule(torch.nn.Module):
 
 
 class FeatureFusionModule(torch.nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, in_channels):
         super().__init__()
         # self.in_channels = input_1.channels + input_2.channels
-        self.in_channels = 3328
+        # resnet101 3328 = 256(from context path) + 1024(from spatial path) + 2048(from spatial path)
+        # resnet18  1024 = 256(from context path) + 256(from spatial path) + 512(from spatial path)
+        self.in_channels = in_channels 
+
         self.convblock = ConvBlock(in_channels=self.in_channels, out_channels=num_classes, stride=1)
         self.conv1 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
         self.relu = nn.ReLU()
@@ -83,19 +86,31 @@ class BiSeNet(torch.nn.Module):
         # build context path
         self.context_path = build_contextpath(name=context_path)
 
-        # build attention refinement module
-        self.attention_refinement_module1 = AttentionRefinementModule(1024, 1024)
-        self.attention_refinement_module2 = AttentionRefinementModule(2048, 2048)
+        # build attention refinement module  for resnet 101
+        if context_path == 'resnet101':
+            self.attention_refinement_module1 = AttentionRefinementModule(1024, 1024)
+            self.attention_refinement_module2 = AttentionRefinementModule(2048, 2048)
+            # supervision block
+            self.supervision1 = nn.Conv2d(in_channels=1024, out_channels=num_classes, kernel_size=1)
+            self.supervision2 = nn.Conv2d(in_channels=2048, out_channels=num_classes, kernel_size=1)
+            # build feature fusion module
+            self.feature_fusion_module = FeatureFusionModule(num_classes, 3328)
 
-        # build feature fusion module
-        self.feature_fusion_module = FeatureFusionModule(num_classes)
+        elif context_path == 'resnet18':
+            # build attention refinement module  for resnet 18
+            self.attention_refinement_module1 = AttentionRefinementModule(256, 256)
+            self.attention_refinement_module2 = AttentionRefinementModule(512, 512)
+            # supervision block
+            self.supervision1 = nn.Conv2d(in_channels=256, out_channels=num_classes, kernel_size=1)
+            self.supervision2 = nn.Conv2d(in_channels=512, out_channels=num_classes, kernel_size=1)
+            # build feature fusion module
+            self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
+        else: 
+            print('Error: unspport context_path network \n')
 
         # build final convolution
         self.conv = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=1)
 
-        # supervision block
-        self.supervision1 = nn.Conv2d(in_channels=1024, out_channels=num_classes, kernel_size=1)
-        self.supervision2 = nn.Conv2d(in_channels=2048, out_channels=num_classes, kernel_size=1)
 
     def forward(self, input):
         # output of spatial path
