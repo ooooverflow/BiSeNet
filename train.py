@@ -10,14 +10,15 @@ import tqdm
 from torch.nn import functional as F
 import numpy as np
 from utils import poly_lr_scheduler
-from utils import reverse_one_hot, get_label_info, colour_code_segmentation, compute_global_accuracy
+from utils import reverse_one_hot, get_label_info, colour_code_segmentation, compute_global_accuracy, fast_hist, per_class_iu
 
 def val(args, model, dataloader, csv_path):
     print('start val!')
-    label_info = get_label_info(csv_path)
+    # label_info = get_label_info(csv_path)
     with torch.no_grad():
         model.eval()
         precision_record = []
+        hist = np.zeros((args.num_classes, args.num_classes))
         for i, (data, label) in enumerate(dataloader):
             if torch.cuda.is_available() and args.use_gpu:
                 data = data.cuda()
@@ -26,17 +27,25 @@ def val(args, model, dataloader, csv_path):
             # get RGB predict image
             predict = model(data).squeeze()
             predict = reverse_one_hot(predict)
-            predict = colour_code_segmentation(np.array(predict), label_info)
+            predict = np.array(predict)
 
             # get RGB label image
             label = label.squeeze()
             label = reverse_one_hot(label)
-            label = colour_code_segmentation(np.array(label), label_info)
+            label = np.array(label)
             # compute per pixel accuracy
+
             precision = compute_global_accuracy(predict, label)
+            hist += fast_hist(label.flatten(), predict.flatten(), args.num_classes)
+
+            # there is no need to transform the one-hot array to visual RGB array
+            # predict = colour_code_segmentation(np.array(predict), label_info)
+            # label = colour_code_segmentation(np.array(label), label_info)
             precision_record.append(precision)
         dice = np.mean(precision_record)
+        miou = np.mean(per_class_iu(hist))
         print('precision per pixel for validation: %.3f' % dice)
+        print('mIoU for validation: %.3f' % miou)
         return dice
 
 
@@ -150,7 +159,7 @@ if __name__ == '__main__':
     params = [
         '--num_epochs', '300',
         '--learning_rate', '0.001',
-        '--data', '/path/to/CamVid',
+        '--data', '/data/sqy/CamVid',
         '--num_workers', '4',
         '--num_classes', '32',
         '--cuda', '2',
