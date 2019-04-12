@@ -159,7 +159,7 @@ if __name__ == '__main__':
     params = [
         '--num_epochs', '300',
         '--learning_rate', '0.001',
-        '--data', '/data/sqy/CamVid',
+        '--data', '/path/to/CamVid',
         '--num_workers', '4',
         '--num_classes', '32',
         '--cuda', '2',
