@@ -5,7 +5,7 @@ import os
 from torch.utils.data import DataLoader
 from model.build_BiSeNet import BiSeNet
 import numpy as np
-from utils import reverse_one_hot, get_label_info, colour_code_segmentation, compute_global_accuracy
+from utils import reverse_one_hot, get_label_info, colour_code_segmentation, compute_global_accuracy, fast_hist, per_class_iu
 import tqdm
 
 
@@ -16,6 +16,7 @@ def eval(model,dataloader, args, label_info):
         precision_record = []
         tq = tqdm.tqdm(total=len(dataloader) * args.batch_size)
         tq.set_description('test')
+        hist = np.zeros((args.num_classes, args.num_classes))
         for i, (data, label) in enumerate(dataloader):
             tq.update(args.batch_size)
             if torch.cuda.is_available() and args.use_gpu:
@@ -23,17 +24,23 @@ def eval(model,dataloader, args, label_info):
                 label = label.cuda()
             predict = model(data).squeeze()
             predict = reverse_one_hot(predict)
-            predict = colour_code_segmentation(np.array(predict), label_info)
+            predict = np.array(predict)
+            # predict = colour_code_segmentation(np.array(predict), label_info)
 
             label = label.squeeze()
             label = reverse_one_hot(label)
-            label = colour_code_segmentation(np.array(label), label_info)
+            label = np.array(label)
+            # label = colour_code_segmentation(np.array(label), label_info)
 
             precision = compute_global_accuracy(predict, label)
+            hist += fast_hist(label.flatten(), predict.flatten(), args.num_classes)
+
             precision_record.append(precision)
         precision = np.mean(precision_record)
+        miou = np.mean(per_class_iu(hist))
         tq.close()
         print('precision for test: %.3f' % precision)
+        print('mIoU for validation: %.3f' % miou)
         return precision
 
 def main(params):

@@ -109,3 +109,16 @@ def compute_global_accuracy(pred, label):
 		if pred[i] == label[i]:
 			count = count + 1.0
 	return float(count) / float(total)
+
+def fast_hist(a, b, n):
+	'''
+	a and b are predict and mask respectively
+	n is the number of classes
+	'''
+	k = (a >= 0) & (a < n)
+	return np.bincount(n * a[k].astype(int) + b[k], minlength=n ** 2).reshape(n, n)
+
+
+def per_class_iu(hist):
+	epsilon = 1e-5
+	return (np.diag(hist) + epsilon) / (hist.sum(1) + hist.sum(0) - np.diag(hist) + epsilon)
