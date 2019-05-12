@@ -62,6 +62,7 @@ def build_contextpath(name):
     return model[name]
 
 if __name__ == '__main__':
+    # 
     model_18 = build_contextpath('resnet18')
     model_101 = build_contextpath('resnet101')
     x = torch.rand(1, 3, 256, 256)

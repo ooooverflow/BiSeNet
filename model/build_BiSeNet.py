@@ -148,7 +148,7 @@ class BiSeNet(torch.nn.Module):
 if __name__ == '__main__':
     import os
     os.environ['CUDA_VISIBLE_DEVICES'] = '5, 6'
-    model = BiSeNet(3)
+    model = BiSeNet(3, 1024)
     model = nn.DataParallel(model)
 
     model = model.cuda()
