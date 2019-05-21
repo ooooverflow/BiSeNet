@@ -1,5 +1,5 @@
 # BiSeNet
-BiSeNet based on pytorch  
+BiSeNet based on pytorch 0.4.1 and python 3.6
 
 ## Dataset  
 Download CamVid dataset from [Semantic-Segmentation-Suite](https://github.com/GeorgeSeif/Semantic-Segmentation-Suite/tree/master/CamVid)  
