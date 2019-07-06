@@ -42,7 +42,7 @@ class|Bicyclist|Building|Car|Pole|Fence|Pedestrian|Road|Sidewalk|SignSymbol|Sky|
 :-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:
 iou | 0.61 | 0.80 |0.86|0.35|0.37|0.59|0.88|0.81|0.28|0.91|0.73|0.655
 
-This time I train the model with **dice loss** and get better result than **cross entropy**. I did not use lots special training strategy, you can get much better result than this repo if using task-specific strategy.  
+This time I train the model with **dice loss** and get better result than **cross entropy loss**. I did not use lots special training strategy, you can get much better result than this repo if using task-specific strategy.  
 This repo is mainly for proving the effeciveness of the model.  
 I also tried some simplified version of bisenet but it seems does not preform very well in CamVid dataset.
 
