@@ -18,8 +18,8 @@ def predict_on_image(model, args):
     resize_det = resize.to_deterministic()
     image = resize_det.augment_image(image)
     image = Image.fromarray(image).convert('RGB')
-    image = transforms.ToTensor()(image).unsqueeze(0)
-
+    image = transforms.ToTensor()(image)
+    image = transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))(image).unsqueeze(0)
     # read csv label path
     label_info = get_label_info(args.csv_path)
     # predict
@@ -37,10 +37,10 @@ def main(params):
     parser.add_argument('--video', action='store_true', default=False, help='predict on video')
     parser.add_argument('--checkpoint_path', type=str, default=None, help='The path to the pretrained weights of model')
     parser.add_argument('--context_path', type=str, default="resnet101", help='The context path model you are using.')
-    parser.add_argument('--num_classes', type=int, default=32, help='num of object classes (with void)')
+    parser.add_argument('--num_classes', type=int, default=12, help='num of object classes (with void)')
     parser.add_argument('--data', type=str, default=None, help='Path to image or video for prediction')
-    parser.add_argument('--crop_height', type=int, default=640, help='Height of cropped/resized input image to network')
-    parser.add_argument('--crop_width', type=int, default=640, help='Width of cropped/resized input image to network')
+    parser.add_argument('--crop_height', type=int, default=720, help='Height of cropped/resized input image to network')
+    parser.add_argument('--crop_width', type=int, default=960, help='Width of cropped/resized input image to network')
     parser.add_argument('--cuda', type=str, default='0', help='GPU ids used for training')
     parser.add_argument('--use_gpu', type=bool, default=True, help='Whether to user gpu for training')
     parser.add_argument('--csv_path', type=str, default=None, required=True, help='Path to label info csv file')
@@ -71,10 +71,11 @@ def main(params):
 if __name__ == '__main__':
     params = [
         '--image',
-        '--data', '0016E5_06210.png',
-        '--checkpoint_path', './checkpoints/epoch_295.pth',
-        '--cuda', '4',
-        '--csv_path', '/path/to/CamVid/class_dict.csv',
-        '--save_path', 'demo.png'
+        '--data', 'exp.png',
+        '--checkpoint_path', './checkpoints_18_sgd/best_dice_loss_original_model_11_2.5e-2_bs16.pth',
+        '--cuda', '0',
+        '--csv_path', '/data/sqy/CamVid/class_dict.csv',
+        '--save_path', 'demo.png',
+        '--context_path', 'resnet18'
     ]
     main(params)
