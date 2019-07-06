@@ -72,7 +72,7 @@ if __name__ == '__main__':
     params = [
         '--image',
         '--data', 'exp.png',
-        '--checkpoint_path', './checkpoints_18_sgd/best_dice_loss_original_model_11_2.5e-2_bs16.pth',
+        '--checkpoint_path', '/path/to/ckpt',
         '--cuda', '0',
         '--csv_path', '/data/sqy/CamVid/class_dict.csv',
         '--save_path', 'demo.png',
