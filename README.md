@@ -46,6 +46,17 @@ This time I train the model with **dice loss** and get better result than **cros
 This repo is mainly for proving the effeciveness of the model.  
 I also tried some simplified version of bisenet but it seems does not preform very well in CamVid dataset.
 
+### Speed
+Method|640×320|1280×720|1920×1080
+:-:|:-:|:-:|:-:
+Paper|129.4|47.9|23
+This Repo|126.8|53.7|23.6
+
+This shows the speed comparison between paper and my implementation. 
+1. The numbers in first row mean input image resolution.
+2. The numbers in second and third row mean FPS.
+3. The result is based on resnet-18.
+
 ## Future work  
 * Finish real-time segmentation with camera or pre-load video  
 
