@@ -53,8 +53,8 @@ Paper|129.4|47.9|23
 This Repo|126.8|53.7|23.6
 
 This shows the speed comparison between paper and my implementation. 
-1. The numbers in first row mean input image resolution.
-2. The numbers in second and third row mean FPS.
+1. The number in first row means input image resolution.
+2. The number in second and third row means FPS.
 3. The result is based on resnet-18.
 
 ## Future work  
